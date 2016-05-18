@@ -51,7 +51,7 @@ getCorrelation <-
     id <- id[!id %in% c("ID", "X", "Y")]
     
     # Calcular a correlação entre as covariáveis
-    correl <- cor(mde[, id])
+    correl <- abs(cor(mde[, id]))
     
     # Identificar os pares de covariáveis com correlação superior à 'max' 
     # ou igual à 1, ou seja, da covariável com ela mesma
