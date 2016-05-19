@@ -1,6 +1,4 @@
-###Script para an?lise dos MDEs utilizando a de regress?o logistica multinominal e classes de solo
-#Predicting Multiple Discrete Values with Multinomials, Neural Networks and the {nnet} Package
-#link:http://amunategui.github.io/multinomial-neuralnetworks-walkthrough/
+### Script para análise dos MDEs utilizando a de regressão logistica multinominal e classes de solo
 
 rm(list = ls())
 
@@ -53,7 +51,7 @@ rm(id)
 # O valor de corte para a correlação é de 0.85. A lista de covariáveis selecionadas mais curta é usada para
 # calibrar o modelo reduzido.
 correl <- lapply(
-  list(MDE5a, MDE5b, MDE5c, MDE20a, MDE20b, MDE20c, MDE30a, MDE30b, MDE30c), getCorrelation, max = 0.85)
+  list(MDE5a, MDE5b, MDE5c, MDE20a, MDE20b, MDE20c, MDE30a, MDE30b, MDE30c), getCorrelation, max = 0.90)
 lapply(correl, function (x) x[["correlation"]])
 selected <- lapply(correl, function (x) x[["selected"]])
 selected <- c(selected[[which.min(sapply(selected, length))]], "Flow.Direct")
@@ -126,6 +124,10 @@ modelo7 <- lapply(list(full_full, full_reduz), nnet::multinom, MDE30a, model = T
 modelo8 <- lapply(list(full_full, full_reduz), nnet::multinom, MDE30b, model = TRUE)
 modelo9 <- lapply(list(full_full, full_reduz), nnet::multinom, MDE30c, model = TRUE)
 
+# Save calibrated models
+save(modelo0, modelo1, modelo2, modelo3, modelo4, modelo5, modelo6, modelo7, modelo8, modelo9,
+     file = "data/R/models.rda")
+
 # Acurácia do ajuste
 accuracy <- lapply(
   list(modelo0, modelo1, modelo2, modelo3, modelo4, modelo5, modelo6, modelo7, modelo8, modelo9),
@@ -142,242 +144,218 @@ validation <- do.call(rbind, validation)
 colnames(validation) <- c("full", "reduz")
 
 # Resultado final
-res <- cbind(accuracy, validation)
-res <- round(res[, c(1, 3, 2, 4)], 1)
-res
+accuracy <- cbind(accuracy, validation)
+accuracy <- round(accuracy[, c(1, 3, 2, 4)], 1)
+accuracy
 
+# Save validation
+save(accuracy, file = "data/R/accuracy.rda")
 
+# Spatial prediction ##########################################################################################
 
+# Colour ramp for Shannon entropy
+traffic.light <- colorRampPalette(c("olivedrab", "khaki", "maroon1"))
 
+# MDE5a
+grid_MDE5a <- read.csv("data/mde05/grid.csv", sep = ";", dec = ",")     # MDE05             5a
+grid_MDE5a$Flow.Direct <- as.factor(grid_MDE5a$Flow.Direct)
+pred_MDE5a <- data.frame(predict(modelo1[[2]], newdata = grid_MDE5a, type = "probs"))
+pred_MDE5a$class <- unlist(predict(modelo1[[2]], newdata = grid_MDE5a, type = "class"))
+pred_MDE5a$entropy <- -rowSums(pred_MDE5a[, 1:6] * log(pred_MDE5a[, 1:6], base = 6))
+pred_MDE5a <- cbind(grid_MDE5a[, c("X", "Y")], pred_MDE5a)
+sp::gridded(pred_MDE5a) <- ~ X + Y
+sp::proj4string(obj = pred_MDE5a) <- sp::CRS("+init=epsg:32723")
+sp::spplot(pred_MDE5a, "class")
+sp::spplot(pred_MDE5a, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+save(pred_MDE5a, file = "data/R/pred_MDE5a.rda")
+rm(pred_MDE5a)
+gc()
+           
+# Testemunha
+pred_teste <- data.frame(predict(modelo0[[2]], newdata = grid_MDE5a, type = "probs"))
+pred_teste$class <- unlist(predict(modelo0[[2]], newdata = grid_MDE5a, type = "class"))
+pred_teste$entropy <- -rowSums(pred_teste[, 1:6] * log(pred_teste[, 1:6], base = 6))
+pred_teste <- cbind(grid_MDE5a[, c("X", "Y")], pred_teste)
+sp::gridded(pred_teste) <- ~ X + Y
+sp::proj4string(pred_teste) <- sp::CRS("+init=epsg:32723")
+sp::spplot(pred_teste, "class")
+sp::spplot(pred_teste, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+save(pred_teste, file = "data/R/pred_teste.rda")
+rm(pred_teste, grid_MDE5a)
+gc()
 
+# MDE5b
+grid_MDE5b <- read.csv("data/IBGE05/grid.csv", sep = ";", dec = ",")    # IBGE05            5b
+grid_MDE5b$Flow.Direct <- as.factor(grid_MDE5b$Flow.Direct)
+pred_MDE5b <- data.frame(predict(modelo2[[2]], newdata = grid_MDE5b, type = "probs"))
+pred_MDE5b$class <- unlist(predict(modelo2[[2]], newdata = grid_MDE5b, type = "class"))
+pred_MDE5b$entropy <- -rowSums(pred_MDE5b[, 1:6] * log(pred_MDE5b[, 1:6], base = 6))
+pred_MDE5b <- cbind(grid_MDE5b[, c("X", "Y")], pred_MDE5b)
+sp::gridded(pred_MDE5b) <- ~ X + Y
+sp::proj4string(pred_MDE5b) <- sp::CRS("+init=epsg:32723")
+sp::spplot(pred_MDE5b, "class")
+sp::spplot(pred_MDE5b, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+save(pred_MDE5b, file = "data/R/pred_MDE5b.rda")
+rm(pred_MDE5b, grid_MDE5b)
+gc()
 
+# MDE5c
+grid_MDE5c <- read.csv("data/mde5/grid.csv", sep = ";", dec = ",")      # MDE Pontos (RJ05) 5c
+grid_MDE5c$Flow.Direct <- as.factor(grid_MDE5c$Flow.Direct)
+pred_MDE5c <- data.frame(predict(modelo3[[2]], newdata = grid_MDE5c, type = "probs"))
+pred_MDE5c$class <- unlist(predict(modelo3[[2]], newdata = grid_MDE5c, type = "class"))
+pred_MDE5c$entropy <- -rowSums(pred_MDE5c[, 1:6] * log(pred_MDE5c[, 1:6], base = 6))
+pred_MDE5c <- cbind(grid_MDE5c[, c("X", "Y")], pred_MDE5c)
+sp::gridded(pred_MDE5c) <- ~ X + Y
+sp::proj4string(pred_MDE5c) <- sp::CRS("+init=epsg:32723")
+sp::spplot(pred_MDE5c, "class")
+sp::spplot(pred_MDE5c, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+save(pred_MDE5c, file = "data/R/pred_MDE5c.rda")
+rm(pred_MDE5c, grid_MDE5c)
+gc()
 
+# MDE20a
+grid_MDE20a <- read.csv("data/mde20/grid.csv", sep = ";", dec = ",")    # MDE20             20a
+grid_MDE20a$Flow.Direct <- as.factor(grid_MDE20a$Flow.Direct)
+pred_MDE20a <- data.frame(predict(modelo4[[2]], newdata = grid_MDE20a, type = "probs"))
+pred_MDE20a$class <- unlist(predict(modelo4[[2]], newdata = grid_MDE20a, type = "class"))
+pred_MDE20a$entropy <- -rowSums(pred_MDE20a[, 1:6] * log(pred_MDE20a[, 1:6], base = 6))
+pred_MDE20a <- cbind(grid_MDE20a[, c("X", "Y")], pred_MDE20a)
+sp::gridded(pred_MDE20a) <- ~ X + Y
+sp::proj4string(pred_MDE20a) <- sp::CRS("+init=epsg:32723")
+sp::spplot(pred_MDE20a, "class")
+sp::spplot(pred_MDE20a, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+save(pred_MDE20a, file = "data/R/pred_MDE20a.rda")
+rm(pred_MDE20a, grid_MDE20a)
+gc()
 
+# MDE20b
+grid_MDE20b <- read.csv("data/IBGE20/grid.csv", sep = ";", dec = ",")   # IBGE20            20b
+grid_MDE20b$Flow.Direct <- as.factor(grid_MDE20b$Flow.Direct)
+pred_MDE20b <- data.frame(predict(modelo5[[2]], newdata = grid_MDE20b, type = "probs"))
+pred_MDE20b$class <- unlist(predict(modelo5[[2]], newdata = grid_MDE20b, type = "class"))
+pred_MDE20b$entropy <- -rowSums(pred_MDE20b[, 1:6] * log(pred_MDE20b[, 1:6], base = 6))
+pred_MDE20b <- cbind(grid_MDE20b[, c("X", "Y")], pred_MDE20b)
+sp::gridded(pred_MDE20b) <- ~ X + Y
+sp::proj4string(pred_MDE20b) <- sp::CRS("+init=epsg:32723")
+sp::spplot(pred_MDE20b, "class")
+sp::spplot(pred_MDE20b, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+save(pred_MDE20b, file = "data/R/pred_MDE20b.rda")
+rm(pred_MDE20b, grid_MDE20b)
+gc()
 
+# MDE20c
+grid_MDE20c <- read.csv("data/RJ/grid.csv", sep = ";", dec = ",")       # MDE-RJ25          20c
+grid_MDE20c$Flow.Direct <- as.factor(grid_MDE20c$Flow.Direct)
+pred_MDE20c <- data.frame(predict(modelo6[[2]], newdata = grid_MDE20c, type = "probs"))
+pred_MDE20c$class <- unlist(predict(modelo6[[2]], newdata = grid_MDE20c, type = "class"))
+pred_MDE20c$entropy <- -rowSums(pred_MDE20c[, 1:6] * log(pred_MDE20c[, 1:6], base = 6))
+pred_MDE20c <- cbind(grid_MDE20c[, c("X", "Y")], pred_MDE20c)
+sp::gridded(pred_MDE20c) <- ~ X + Y
+sp::proj4string(pred_MDE20c) <- sp::CRS("+init=epsg:32723")
+sp::spplot(pred_MDE20c, "class")
+sp::spplot(pred_MDE20c, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+save(pred_MDE20c, file = "data/R/pred_MDE20c.rda")
+rm(pred_MDE20c, grid_MDE20c)
+gc()
 
+# MDE30a
+grid_MDE30a <- read.csv("data/mde30/grid.csv", sep = ";", dec = ",")    # MDE30             30a
+grid_MDE30a$Flow.Direct <- as.factor(grid_MDE30a$Flow.Direct)
+pred_MDE30a <- data.frame(predict(modelo7[[2]], newdata = grid_MDE30a, type = "probs"))
+pred_MDE30a$class <- unlist(predict(modelo7[[2]], newdata = grid_MDE30a, type = "class"))
+pred_MDE30a$entropy <- -rowSums(pred_MDE30a[, 1:6] * log(pred_MDE30a[, 1:6], base = 6))
+pred_MDE30a <- cbind(grid_MDE30a[, c("X", "Y")], pred_MDE30a)
+sp::gridded(pred_MDE30a) <- ~ X + Y
+sp::proj4string(pred_MDE30a) <- sp::CRS("+init=epsg:32723")
+sp::spplot(pred_MDE30a, "class")
+sp::spplot(pred_MDE30a, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+save(pred_MDE30a, file = "data/R/pred_MDE30a.rda")
+rm(pred_MDE30a, grid_MDE30a)
+gc()
 
-# carregando os grides de cada MDE ###############################
+# MDE30b
+grid_MDE30b <- read.csv("data/IBGE30/grid.csv", sep = ";", dec = ",")   # IBGE30            30b
+grid_MDE30b$Flow.Direct <- as.factor(grid_MDE30b$Flow.Direct)
+pred_MDE30b <- data.frame(predict(modelo8[[2]], newdata = grid_MDE30b, type = "probs"))
+pred_MDE30b$class <- unlist(predict(modelo8[[2]], newdata = grid_MDE30b, type = "class"))
+pred_MDE30b$entropy <- -rowSums(pred_MDE30b[, 1:6] * log(pred_MDE30b[, 1:6], base = 6))
+pred_MDE30b <- cbind(grid_MDE30b[, c("X", "Y")], pred_MDE30b)
+sp::gridded(pred_MDE30b) <- ~ X + Y
+sp::proj4string(pred_MDE30b) <- sp::CRS("+init=epsg:32723")
+sp::spplot(pred_MDE30b, "class")
+sp::spplot(pred_MDE30b, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+save(pred_MDE30b, file = "data/R/pred_MDE30b.rda")
+rm(pred_MDE30b, grid_MDE30b)
+gc()
 
-grid_MDE1 <- read.csv("C:/MDE/dados2/IBGE05/grid.csv", sep=";", dec=",") #IBGE05
-grid_MDE2 <- read.csv("C:/MDE/dados2/mde05/grid.csv", sep=";", dec=",") #MDE05 
-grid_MDE3 <- read.csv("C:/MDE/dados2/mde5/grid.csv", sep=";", dec=",") #MDE Pontos (RJ05)
-grid_MDE4 <- read.csv("C:/MDE/dados2/IBGE20/grid.csv", sep=";", dec=",") #IBGE20
-grid_MDE5 <- read.csv("C:/MDE/dados2/mde20/grid.csv", sep=";", dec=",") #MDE20
-grid_MDE6 <- read.csv("C:/MDE/dados2/RJ/grid.csv", sep=";", dec=",")    #MDE-RJ25
-grid_MDE7 <- read.csv("C:/MDE/dados2/IBGE30/grid.csv", sep=";", dec=",") #IBGE30
-grid_MDE8 <- read.csv("C:/MDE/dados2/mde30/grid.csv", sep=";", dec=",")  #MDE30
-grid_MDE9 <- read.csv("C:/MDE/dados2/Topodata/grid.csv", sep=";", dec=",") #Topodata
+# MDE30c
+grid_MDE30c <- read.csv("data/Topodata/grid.csv", sep = ";", dec = ",") # Topodata          30c
+grid_MDE30c$Flow.Direct <- as.factor(grid_MDE30c$Flow.Direct)
+pred_MDE30c <- data.frame(predict(modelo9[[2]], newdata = grid_MDE30c, type = "probs"))
+pred_MDE30c$class <- unlist(predict(modelo9[[2]], newdata = grid_MDE30c, type = "class"))
+pred_MDE30c$entropy <- -rowSums(pred_MDE30c[, 1:6] * log(pred_MDE30c[, 1:6], base = 6))
+pred_MDE30c <- cbind(grid_MDE30c[, c("X", "Y")], pred_MDE30c)
+sp::gridded(pred_MDE30c) <- ~ X + Y
+sp::proj4string(pred_MDE30c) <- sp::CRS("+init=epsg:32723")
+sp::spplot(pred_MDE30c, "class")
+sp::spplot(pred_MDE30c, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+save(pred_MDE30c, file = "data/R/pred_MDE30c.rda")
+rm(pred_MDE30c, grid_MDE30c)
+gc()
 
-#retirando Nas dos grids
-grid_MDE1 <- na.omit(grid_MDE1)
-grid_MDE2 <- na.omit(grid_MDE2)
-grid_MDE3 <- na.omit(grid_MDE3)
-grid_MDE4 <- na.omit(grid_MDE4)
-grid_MDE5 <- na.omit(grid_MDE5)
-grid_MDE6 <- na.omit(grid_MDE6)
-grid_MDE7 <- na.omit(grid_MDE7)
-grid_MDE8 <- na.omit(grid_MDE8)
-grid_MDE9 <- na.omit(grid_MDE9)
+# Prepare figure with predictions
+files <- expand.grid(c(5, 20, 30), letters[1:3])
+files <- files[order(files$Var1), ]
+files <- 
+  c(sapply(1:nrow(files), function (i) paste("pred_MDE", files[i, 1], files[i, 2], sep = "")), "pred_teste")
+file_names <- paste("load('data/R/", files, ".rda')", sep = "")
+file_names <- sapply(1:length(file_names), function (i) parse(text = file_names[i]))
+for (i in 1:length(file_names)) {
+  eval(file_names[[i]])
+}
+maps <- list()
+for (i in 1:length(files)) {
+  obj <- parse(text = paste("maps[[i]] <- ", files[i], "$class", sep = ""))
+  eval(obj)
+}
+maps <- cbind(pred_MDE30a@coords, as.data.frame(maps))
+col_names <- gsub("pred_", "", files)
+col_names[length(col_names)] <- "T"
+colnames(maps) <- c(colnames(maps)[1:2], col_names)
+sp::gridded(maps) <- ~ X + Y
+sp::proj4string(maps) <- sp::CRS("+init=epsg:32723")
+maps <- sp::spplot(maps, layout = c(3, 4))
+names(maps$legend) <- "inside"
+maps$legend$inside$x <- 0.795
+maps$legend$inside$y <- 0.875
+maps$legend$inside$args$key$height <- 0.2
+maps$index.cond[[1]] <- c(7:9, 4:6, 1:3, 10)
+dev.off()
+png("res/fig/predictions.png", width = 16, height = 26, units = "cm", res = 150)
+maps
+dev.off()
 
-#trasformando as covariaveis categoricas em fator para da MDE
-#MDE1
-grid_MDE1$uso <- as.factor(grid_MDE1$uso)
-grid_MDE1$geologia <- as.factor(grid_MDE1$geologia)
-grid_MDE1$Solos <- as.factor(grid_MDE1$Solos)
-grid_MDE1$Flow.Direct <- as.factor(grid_MDE1$Flow.Direct)
+# Prepare figure with Shannon entropy
+maps <- list()
+for (i in 1:length(files)) {
+  obj <- parse(text = paste("maps[[i]] <- ", files[i], "$entropy", sep = ""))
+  eval(obj)
+}
+maps <- cbind(pred_MDE30a@coords, as.data.frame(maps))
+col_names <- gsub("pred_", "", files)
+col_names[length(col_names)] <- "T"
+colnames(maps) <- c(colnames(maps)[1:2], col_names)
+sp::gridded(maps) <- ~ X + Y
+sp::proj4string(maps) <- sp::CRS("+init=epsg:32723")
+maps <- sp::spplot(maps, layout = c(3, 4), at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+names(maps$legend) <- "inside"
+maps$legend$inside$x <- 0.795
+maps$legend$inside$y <- 0.875
+maps$legend$inside$args$key$height <- 0.2
+maps$index.cond[[1]] <- c(7:9, 4:6, 1:3, 10)
+dev.off()
+png("res/fig/entropy.png", width = 16, height = 26, units = "cm", res = 150)
+maps
+dev.off()
 
-#MDE2
-grid_MDE2$uso <- as.factor(grid_MDE2$uso)
-grid_MDE2$geologia <- as.factor(grid_MDE2$geologia)
-grid_MDE2$Solos <- as.factor(grid_MDE2$Solos)
-grid_MDE2$Flow.Direct <- as.factor(grid_MDE2$Flow.Direct)
-
-#MDE3
-grid_MDE3$uso <- as.factor(grid_MDE3$uso)
-grid_MDE3$geologia <- as.factor(grid_MDE3$geologia)
-grid_MDE3$Solos <- as.factor(grid_MDE3$Solos)
-grid_MDE3$Flow.Direct <- as.factor(grid_MDE3$Flow.Direct)
-
-#MDE4
-grid_MDE4$uso <- as.factor(grid_MDE4$uso)
-grid_MDE4$geologia <- as.factor(grid_MDE4$geologia)
-grid_MDE4$Solos <- as.factor(grid_MDE4$Solos)
-grid_MDE4$Flow.Direct <- as.factor(grid_MDE4$Flow.Direct)
-
-#MDE5
-grid_MDE5$uso <- as.factor(grid_MDE5$uso)
-grid_MDE5$geologia <- as.factor(grid_MDE5$geologia)
-grid_MDE5$Solos <- as.factor(grid_MDE5$Solos)
-grid_MDE5$Flow.Direct <- as.factor(grid_MDE5$Flow.Direct)
-
-#MDE6
-grid_MDE6$uso <- as.factor(grid_MDE6$uso)
-grid_MDE6$geologia <- as.factor(grid_MDE6$geologia)
-grid_MDE6$Solos <- as.factor(grid_MDE6$Solos)
-grid_MDE6$Flow.Direct <- as.factor(grid_MDE6$Flow.Direct)
-
-#MDE7
-grid_MDE7$uso <- as.factor(grid_MDE7$uso)
-grid_MDE7$geologia <- as.factor(grid_MDE7$geologia)
-grid_MDE7$Solos <- as.factor(grid_MDE7$Solos)
-grid_MDE7$Flow.Direct <- as.factor(grid_MDE7$Flow.Direct)
-
-#MDE8
-grid_MDE8$uso <- as.factor(grid_MDE8$uso)
-grid_MDE8$geologia <- as.factor(grid_MDE8$geologia)
-grid_MDE8$Solos <- as.factor(grid_MDE8$Solos)
-grid_MDE8$Flow.Direct <- as.factor(grid_MDE8$Flow.Direct)
-
-#MDE9
-grid_MDE9$uso <- as.factor(grid_MDE9$uso)
-grid_MDE9$geologia <- as.factor(grid_MDE9$geologia)
-grid_MDE9$Solos <- as.factor(grid_MDE9$Solos)
-grid_MDE9$Flow.Direct <- as.factor(grid_MDE9$Flow.Direct)
-
-
-
-#fazer as predições e salvar em formato .asc
-require(sp)
-#Testemunha
-pred1 <- predict(modelo1, newdata = grid_MDE1, na.action = na.omit, type = "raw")
-pred1 <-data.frame(x=grid_MDE1$X, y=grid_MDE1$Y, pred1=pred1)
-str(pred1)
-coordinates(pred1) <- ~x+y
-str(pred1)
-gridded(pred1) <- TRUE# transformar "grid_clas" de DataFrame para SpatialPixelsDataFrame
-str(pred1)
-spplot(pred1)
-proj4string(obj = pred1)<-CRS("+init=epsg:32723")
-str(pred1)
-pred1 <-as(object = pred1, "SpatialGridDataFrame")
-writeRaster(raster(pred1), "Testemunha.asc", format="ascii", NAflag=-9999) # esportar em formato asc
-
-#MDE1
-pred2 <- predict(modelo2, newdata = grid_MDE1, na.action = na.omit, type = "raw")
-pred2 <-data.frame(x=grid_MDE1$X, y=grid_MDE1$Y, pred2=pred2)
-str(pred2)
-coordinates(pred2) <- ~x+y
-str(pred2)
-gridded(pred2) <- TRUE# transformar "grid_clas" de DataFrame para SpatialPixelsDataFrame
-str(pred2)
-spplot(pred2)
-proj4string(obj = pred2)<-CRS("+init=epsg:32723")
-str(pred2)
-pred2 <-as(object = pred2, "SpatialGridDataFrame")
-writeRaster(raster(pred2), "MDE1.asc", format="ascii", NAflag=-9999) # esportar em formato asc
-
-#MDE2
-pred3 <- predict(modelo3, newdata = grid_MDE2, na.action = na.omit, type = "raw")
-pred3 <-data.frame(x=grid_MDE2$X, y=grid_MDE2$Y, pred3=pred3)
-str(pred3)
-coordinates(pred3) <- ~x+y
-str(pred3)
-gridded(pred3) <- TRUE# transformar "grid_clas" de DataFrame para SpatialPixelsDataFrame
-str(pred3)
-spplot(pred3)
-proj4string(obj = pred3)<-CRS("+init=epsg:32723")
-str(pred3)
-pred3 <-as(object = pred3, "SpatialGridDataFrame")
-writeRaster(raster(pred3), "MDE2.asc", format="ascii", NAflag=-9999) # esportar em formato asc
-
-#MDE3
-pred4 <- predict(modelo4, newdata = grid_MDE3, na.action = na.omit, type = "raw")
-pred4 <-data.frame(x=grid_MDE3$X, y=grid_MDE3$Y, pred4=pred4)
-str(pred4)
-coordinates(pred4) <- ~x+y
-str(pred4)
-gridded(pred4) <- TRUE# transformar "grid_clas" de DataFrame para SpatialPixelsDataFrame
-str(pred4)
-spplot(pred4)
-proj4string(obj = pred4)<-CRS("+init=epsg:32723")
-str(pred4)
-pred4 <-as(object = pred4, "SpatialGridDataFrame")
-writeRaster(raster(pred4), "MDE3.asc", format="ascii", NAflag=-9999) # esportar em formato asc
-
-#MDE4
-pred5 <- predict(modelo5, newdata = grid_MDE4, na.action = na.omit, type = "raw")
-pred5 <-data.frame(x=grid_MDE4$X, y=grid_MDE4$Y, pred5=pred5)
-str(pred5)
-coordinates(pred5) <- ~x+y
-str(pred5)
-gridded(pred5) <- TRUE# transformar "grid_clas" de DataFrame para SpatialPixelsDataFrame
-str(pred5)
-spplot(pred5)
-proj4string(obj = pred5)<-CRS("+init=epsg:32723")
-str(pred5)
-pred5 <-as(object = pred5, "SpatialGridDataFrame")
-writeRaster(raster(pred5), "MDE4.asc", format="ascii", NAflag=-9999) # esportar em formato asc
-
-#MDE5
-pred6 <- predict(modelo6, newdata = grid_MDE5, na.action = na.omit, type = "raw")
-pred6 <-data.frame(x=grid_MDE5$X, y=grid_MDE5$Y, pred6=pred6)
-str(pred6)
-coordinates(pred6) <- ~x+y
-str(pred6)
-gridded(pred6) <- TRUE# transformar "grid_clas" de DataFrame para SpatialPixelsDataFrame
-str(pred6)
-spplot(pred6)
-proj4string(obj = pred6)<-CRS("+init=epsg:32723")
-str(pred6)
-pred6 <-as(object = pred6, "SpatialGridDataFrame")
-writeRaster(raster(pred6), "MDE5.asc", format="ascii", NAflag=-9999) # esportar em formato asc
-
-#MDE6
-pred7 <- predict(modelo7, newdata = grid_MDE6, na.action = na.omit, type = "raw")
-pred7 <-data.frame(x=grid_MDE6$X, y=grid_MDE6$Y, pred7=pred7)
-str(pred7)
-coordinates(pred7) <- ~x+y
-str(pred7)
-gridded(pred7) <- TRUE# transformar "grid_clas" de DataFrame para SpatialPixelsDataFrame
-str(pred7)
-spplot(pred7)
-proj4string(obj = pred7)<-CRS("+init=epsg:32723")
-str(pred7)
-pred7 <-as(object = pred7, "SpatialGridDataFrame")
-writeRaster(raster(pred7), "MDE6.asc", format="ascii", NAflag=-9999) # esportar em formato asc
-
-#MDE7
-pred8 <- predict(modelo8, newdata = grid_MDE7, na.action = na.omit, type = "raw")
-pred8 <-data.frame(x=grid_MDE7$X, y=grid_MDE7$Y, pred8=pred8)
-str(pred8)
-coordinates(pred8) <- ~x+y
-str(pred8)
-gridded(pred8) <- TRUE# transformar "grid_clas" de DataFrame para SpatialPixelsDataFrame
-str(pred8)
-spplot(pred8)
-proj4string(obj = pred8)<-CRS("+init=epsg:32723")
-str(pred8)
-pred8 <-as(object = pred8, "SpatialGridDataFrame")
-writeRaster(raster(pred8), "MDE7.asc", format="ascii", NAflag=-9999) # esportar em formato asc
-
-#MDE8
-pred9 <- predict(modelo9, newdata = grid_MDE8, na.action = na.omit, type = "raw")
-pred9 <-data.frame(x=grid_MDE8$X, y=grid_MDE8$Y, pred9=pred9)
-str(pred9)
-coordinates(pred9) <- ~x+y
-str(pred9)
-gridded(pred9) <- TRUE# transformar "grid_clas" de DataFrame para SpatialPixelsDataFrame
-str(pred9)
-spplot(pred9)
-proj4string(obj = pred9)<-CRS("+init=epsg:32723")
-str(pred9)
-pred9 <-as(object = pred9, "SpatialGridDataFrame")
-writeRaster(raster(pred9), "MDE8.asc", format="ascii", NAflag=-9999) # esportar em formato asc
-
-
-#MDE9
-pred10 <- predict(modelo10, newdata = grid_MDE9, na.action = na.omit, type = "raw")
-pred10 <-data.frame(x=grid_MDE9$X, y=grid_MDE9$Y, pred10=pred10)
-str(pred10)
-coordinates(pred10) <- ~x+y
-str(pred10)
-gridded(pred10) <- TRUE# transformar "grid_clas" de DataFrame para SpatialPixelsDataFrame
-str(pred10)
-spplot(pred10)
-proj4string(obj = pred10)<-CRS("+init=epsg:32723")
-str(pred10)
-pred10 <-as(object = pred10, "SpatialGridDataFrame")
-writeRaster(raster(pred10), "MDE9.asc", format="ascii", NAflag=-9999) # esportar em formato asc
-
-                          #The end
-                  
