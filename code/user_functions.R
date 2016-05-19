@@ -51,11 +51,11 @@ getCorrelation <-
     id <- id[!id %in% c("ID", "X", "Y")]
     
     # Calcular a correlação entre as covariáveis
-    correl <- abs(cor(mde[, id]))
+    correl <- cor(mde[, id])
     
     # Identificar os pares de covariáveis com correlação superior à 'max' 
     # ou igual à 1, ou seja, da covariável com ela mesma
-    idx <- which(correl > max & correl < 1, arr.ind = TRUE)
+    idx <- which(abs(correl) > max & correl < 1, arr.ind = TRUE)
     covar <- data.frame(x = rownames(correl)[idx[, 1]], y = colnames(correl)[idx[, 2]])
     
     # Adicionar coluna com a correlação e ordenar da maior para a menor
