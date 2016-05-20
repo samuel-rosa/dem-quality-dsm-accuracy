@@ -153,6 +153,8 @@ save(accuracy, file = "data/R/accuracy.rda")
 
 # Spatial prediction ##########################################################################################
 
+require(nnet)
+
 # Colour ramp for Shannon entropy
 traffic.light <- colorRampPalette(c("olivedrab", "khaki", "maroon1"))
 
@@ -161,7 +163,7 @@ grid_MDE5a <- read.csv("data/mde05/grid.csv", sep = ";", dec = ",")     # MDE05 
 grid_MDE5a$Flow.Direct <- as.factor(grid_MDE5a$Flow.Direct)
 pred_MDE5a <- data.frame(predict(modelo1[[2]], newdata = grid_MDE5a, type = "probs"))
 pred_MDE5a$class <- unlist(predict(modelo1[[2]], newdata = grid_MDE5a, type = "class"))
-pred_MDE5a$entropy <- -rowSums(pred_MDE5a[, 1:6] * log(pred_MDE5a[, 1:6], base = 6))
+pred_MDE5a$entropy <- -rowSums(pred_MDE5a[, 1:6] * log(pred_MDE5a[, 1:6], base = 6), na.rm = TRUE)
 pred_MDE5a <- cbind(grid_MDE5a[, c("X", "Y")], pred_MDE5a)
 sp::gridded(pred_MDE5a) <- ~ X + Y
 sp::proj4string(obj = pred_MDE5a) <- sp::CRS("+init=epsg:32723")
@@ -170,11 +172,11 @@ sp::spplot(pred_MDE5a, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.lig
 save(pred_MDE5a, file = "data/R/pred_MDE5a.rda")
 rm(pred_MDE5a)
 gc()
-           
+
 # Testemunha
 pred_teste <- data.frame(predict(modelo0[[2]], newdata = grid_MDE5a, type = "probs"))
 pred_teste$class <- unlist(predict(modelo0[[2]], newdata = grid_MDE5a, type = "class"))
-pred_teste$entropy <- -rowSums(pred_teste[, 1:6] * log(pred_teste[, 1:6], base = 6))
+pred_teste$entropy <- -rowSums(pred_teste[, 1:6] * log(pred_teste[, 1:6], base = 6), na.rm = TRUE)
 pred_teste <- cbind(grid_MDE5a[, c("X", "Y")], pred_teste)
 sp::gridded(pred_teste) <- ~ X + Y
 sp::proj4string(pred_teste) <- sp::CRS("+init=epsg:32723")
@@ -189,7 +191,7 @@ grid_MDE5b <- read.csv("data/IBGE05/grid.csv", sep = ";", dec = ",")    # IBGE05
 grid_MDE5b$Flow.Direct <- as.factor(grid_MDE5b$Flow.Direct)
 pred_MDE5b <- data.frame(predict(modelo2[[2]], newdata = grid_MDE5b, type = "probs"))
 pred_MDE5b$class <- unlist(predict(modelo2[[2]], newdata = grid_MDE5b, type = "class"))
-pred_MDE5b$entropy <- -rowSums(pred_MDE5b[, 1:6] * log(pred_MDE5b[, 1:6], base = 6))
+pred_MDE5b$entropy <- -rowSums(pred_MDE5b[, 1:6] * log(pred_MDE5b[, 1:6], base = 6), na.rm = TRUE)
 pred_MDE5b <- cbind(grid_MDE5b[, c("X", "Y")], pred_MDE5b)
 sp::gridded(pred_MDE5b) <- ~ X + Y
 sp::proj4string(pred_MDE5b) <- sp::CRS("+init=epsg:32723")
@@ -204,7 +206,7 @@ grid_MDE5c <- read.csv("data/mde5/grid.csv", sep = ";", dec = ",")      # MDE Po
 grid_MDE5c$Flow.Direct <- as.factor(grid_MDE5c$Flow.Direct)
 pred_MDE5c <- data.frame(predict(modelo3[[2]], newdata = grid_MDE5c, type = "probs"))
 pred_MDE5c$class <- unlist(predict(modelo3[[2]], newdata = grid_MDE5c, type = "class"))
-pred_MDE5c$entropy <- -rowSums(pred_MDE5c[, 1:6] * log(pred_MDE5c[, 1:6], base = 6))
+pred_MDE5c$entropy <- -rowSums(pred_MDE5c[, 1:6] * log(pred_MDE5c[, 1:6], base = 6), na.rm = TRUE)
 pred_MDE5c <- cbind(grid_MDE5c[, c("X", "Y")], pred_MDE5c)
 sp::gridded(pred_MDE5c) <- ~ X + Y
 sp::proj4string(pred_MDE5c) <- sp::CRS("+init=epsg:32723")
@@ -219,7 +221,7 @@ grid_MDE20a <- read.csv("data/mde20/grid.csv", sep = ";", dec = ",")    # MDE20 
 grid_MDE20a$Flow.Direct <- as.factor(grid_MDE20a$Flow.Direct)
 pred_MDE20a <- data.frame(predict(modelo4[[2]], newdata = grid_MDE20a, type = "probs"))
 pred_MDE20a$class <- unlist(predict(modelo4[[2]], newdata = grid_MDE20a, type = "class"))
-pred_MDE20a$entropy <- -rowSums(pred_MDE20a[, 1:6] * log(pred_MDE20a[, 1:6], base = 6))
+pred_MDE20a$entropy <- -rowSums(pred_MDE20a[, 1:6] * log(pred_MDE20a[, 1:6], base = 6), na.rm = TRUE)
 pred_MDE20a <- cbind(grid_MDE20a[, c("X", "Y")], pred_MDE20a)
 sp::gridded(pred_MDE20a) <- ~ X + Y
 sp::proj4string(pred_MDE20a) <- sp::CRS("+init=epsg:32723")
@@ -234,7 +236,7 @@ grid_MDE20b <- read.csv("data/IBGE20/grid.csv", sep = ";", dec = ",")   # IBGE20
 grid_MDE20b$Flow.Direct <- as.factor(grid_MDE20b$Flow.Direct)
 pred_MDE20b <- data.frame(predict(modelo5[[2]], newdata = grid_MDE20b, type = "probs"))
 pred_MDE20b$class <- unlist(predict(modelo5[[2]], newdata = grid_MDE20b, type = "class"))
-pred_MDE20b$entropy <- -rowSums(pred_MDE20b[, 1:6] * log(pred_MDE20b[, 1:6], base = 6))
+pred_MDE20b$entropy <- -rowSums(pred_MDE20b[, 1:6] * log(pred_MDE20b[, 1:6], base = 6), na.rm = TRUE)
 pred_MDE20b <- cbind(grid_MDE20b[, c("X", "Y")], pred_MDE20b)
 sp::gridded(pred_MDE20b) <- ~ X + Y
 sp::proj4string(pred_MDE20b) <- sp::CRS("+init=epsg:32723")
@@ -249,7 +251,7 @@ grid_MDE20c <- read.csv("data/RJ/grid.csv", sep = ";", dec = ",")       # MDE-RJ
 grid_MDE20c$Flow.Direct <- as.factor(grid_MDE20c$Flow.Direct)
 pred_MDE20c <- data.frame(predict(modelo6[[2]], newdata = grid_MDE20c, type = "probs"))
 pred_MDE20c$class <- unlist(predict(modelo6[[2]], newdata = grid_MDE20c, type = "class"))
-pred_MDE20c$entropy <- -rowSums(pred_MDE20c[, 1:6] * log(pred_MDE20c[, 1:6], base = 6))
+pred_MDE20c$entropy <- -rowSums(pred_MDE20c[, 1:6] * log(pred_MDE20c[, 1:6], base = 6), na.rm = TRUE)
 pred_MDE20c <- cbind(grid_MDE20c[, c("X", "Y")], pred_MDE20c)
 sp::gridded(pred_MDE20c) <- ~ X + Y
 sp::proj4string(pred_MDE20c) <- sp::CRS("+init=epsg:32723")
@@ -264,7 +266,7 @@ grid_MDE30a <- read.csv("data/mde30/grid.csv", sep = ";", dec = ",")    # MDE30 
 grid_MDE30a$Flow.Direct <- as.factor(grid_MDE30a$Flow.Direct)
 pred_MDE30a <- data.frame(predict(modelo7[[2]], newdata = grid_MDE30a, type = "probs"))
 pred_MDE30a$class <- unlist(predict(modelo7[[2]], newdata = grid_MDE30a, type = "class"))
-pred_MDE30a$entropy <- -rowSums(pred_MDE30a[, 1:6] * log(pred_MDE30a[, 1:6], base = 6))
+pred_MDE30a$entropy <- -rowSums(pred_MDE30a[, 1:6] * log(pred_MDE30a[, 1:6], base = 6), na.rm = TRUE)
 pred_MDE30a <- cbind(grid_MDE30a[, c("X", "Y")], pred_MDE30a)
 sp::gridded(pred_MDE30a) <- ~ X + Y
 sp::proj4string(pred_MDE30a) <- sp::CRS("+init=epsg:32723")
@@ -279,7 +281,7 @@ grid_MDE30b <- read.csv("data/IBGE30/grid.csv", sep = ";", dec = ",")   # IBGE30
 grid_MDE30b$Flow.Direct <- as.factor(grid_MDE30b$Flow.Direct)
 pred_MDE30b <- data.frame(predict(modelo8[[2]], newdata = grid_MDE30b, type = "probs"))
 pred_MDE30b$class <- unlist(predict(modelo8[[2]], newdata = grid_MDE30b, type = "class"))
-pred_MDE30b$entropy <- -rowSums(pred_MDE30b[, 1:6] * log(pred_MDE30b[, 1:6], base = 6))
+pred_MDE30b$entropy <- -rowSums(pred_MDE30b[, 1:6] * log(pred_MDE30b[, 1:6], base = 6), na.rm = TRUE)
 pred_MDE30b <- cbind(grid_MDE30b[, c("X", "Y")], pred_MDE30b)
 sp::gridded(pred_MDE30b) <- ~ X + Y
 sp::proj4string(pred_MDE30b) <- sp::CRS("+init=epsg:32723")
@@ -294,7 +296,7 @@ grid_MDE30c <- read.csv("data/Topodata/grid.csv", sep = ";", dec = ",") # Topoda
 grid_MDE30c$Flow.Direct <- as.factor(grid_MDE30c$Flow.Direct)
 pred_MDE30c <- data.frame(predict(modelo9[[2]], newdata = grid_MDE30c, type = "probs"))
 pred_MDE30c$class <- unlist(predict(modelo9[[2]], newdata = grid_MDE30c, type = "class"))
-pred_MDE30c$entropy <- -rowSums(pred_MDE30c[, 1:6] * log(pred_MDE30c[, 1:6], base = 6))
+pred_MDE30c$entropy <- -rowSums(pred_MDE30c[, 1:6] * log(pred_MDE30c[, 1:6], base = 6), na.rm = TRUE)
 pred_MDE30c <- cbind(grid_MDE30c[, c("X", "Y")], pred_MDE30c)
 sp::gridded(pred_MDE30c) <- ~ X + Y
 sp::proj4string(pred_MDE30c) <- sp::CRS("+init=epsg:32723")
@@ -304,7 +306,7 @@ save(pred_MDE30c, file = "data/R/pred_MDE30c.rda")
 rm(pred_MDE30c, grid_MDE30c)
 gc()
 
-# Prepare figure with predictions
+# Prepare files names for figures
 files <- expand.grid(c(5, 20, 30), letters[1:3])
 files <- files[order(files$Var1), ]
 files <- 
@@ -314,6 +316,8 @@ file_names <- sapply(1:length(file_names), function (i) parse(text = file_names[
 for (i in 1:length(file_names)) {
   eval(file_names[[i]])
 }
+
+# Prepare figure with predictions
 maps <- list()
 for (i in 1:length(files)) {
   obj <- parse(text = paste("maps[[i]] <- ", files[i], "$class", sep = ""))
@@ -358,4 +362,3 @@ dev.off()
 png("res/fig/entropy.png", width = 16, height = 26, units = "cm", res = 150)
 maps
 dev.off()
-
