@@ -323,6 +323,24 @@ for (i in 1:length(files)) {
   obj <- parse(text = paste("maps[[i]] <- ", files[i], "$class", sep = ""))
   eval(obj)
 }
+
+# Number of pixels per class
+tmp <- lapply(maps, summary)
+tmp <- lapply(1:10, function (i) tmp[[i]][1:6])
+tmp <- as.data.frame(tmp)
+nam <- rownames(tmp)
+tmp <- stack(tmp)
+tmp$um <- rep(nam, 10)
+tmp$mde <- 
+  c(rep(paste(rep(paste("MDE", c(5, 20, 30), sep = ""), each = 3), c("a", "b", "c"), sep = ""), each = 6), rep("T", 6))
+tmp <- tmp[, -2]
+head(tmp, 10)
+dev.off()
+png("res/fig/pixels.png", width = 40, height = 26, units = "cm", res = 150)
+lattice::barchart(values ~ um | mde, tmp, layout = c(3, 4))
+dev.off()
+
+# Continue with maps
 maps <- cbind(pred_MDE30a@coords, as.data.frame(maps))
 col_names <- gsub("pred_", "", files)
 col_names[length(col_names)] <- "T"
