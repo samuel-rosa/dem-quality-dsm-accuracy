@@ -306,6 +306,8 @@ save(pred_MDE30c, file = "data/R/pred_MDE30c.rda")
 rm(pred_MDE30c, grid_MDE30c)
 gc()
 
+# Prepare figures #############################################################################################
+# 
 # Prepare files names for figures
 files <- expand.grid(c(5, 20, 30), letters[1:3])
 files <- files[order(files$Var1), ]
@@ -328,16 +330,16 @@ for (i in 1:length(files)) {
 tmp <- lapply(maps, summary)
 tmp <- lapply(1:10, function (i) tmp[[i]][1:6])
 tmp <- as.data.frame(tmp)
+colnames(tmp) <- 
+  c(paste(rep(paste("MDE", c(5, 20, 30), sep = ""), each = 3), c("a", "b", "c"), sep = ""), "T")
 nam <- rownames(tmp)
 tmp <- stack(tmp)
 tmp$um <- rep(nam, 10)
-tmp$mde <- 
-  c(rep(paste(rep(paste("MDE", c(5, 20, 30), sep = ""), each = 3), c("a", "b", "c"), sep = ""), each = 6), rep("T", 6))
-tmp <- tmp[, -2]
-head(tmp, 10)
+tmp <- lattice::barchart(values ~ um | ind, tmp, layout = c(3, 4))
+tmp$index.cond[[1]] <- c(4:6, 1:3, 7:10)
 dev.off()
 png("res/fig/pixels.png", width = 40, height = 26, units = "cm", res = 150)
-lattice::barchart(values ~ um | mde, tmp, layout = c(3, 4))
+tmp
 dev.off()
 
 # Continue with maps
@@ -364,10 +366,29 @@ for (i in 1:length(files)) {
   obj <- parse(text = paste("maps[[i]] <- ", files[i], "$entropy", sep = ""))
   eval(obj)
 }
+
+# Distribution
+tmp <- data.frame(maps)
+colnames(tmp) <- 
+  c(paste(rep(paste("MDE", c(5, 20, 30), sep = ""), each = 3), c("a", "b", "c"), sep = ""), "T")
+tmp <- stack(tmp)
+tmp <- lattice::histogram(~ values | ind, tmp, layout = c(3, 4))
+tmp$index.cond[[1]] <- c(4:6, 1:3, 7:10)
+dev.off()
+png("res/fig/entropy_histogram.png", width = 20, height = 26, units = "cm", res = 150)
+tmp
+dev.off()
+
+# Continue with maps
 maps <- cbind(pred_MDE30a@coords, as.data.frame(maps))
 col_names <- gsub("pred_", "", files)
 col_names[length(col_names)] <- "T"
 colnames(maps) <- c(colnames(maps)[1:2], col_names)
+
+# Get minimum entropy
+min_entropy <- apply(maps[, c(3, ncol(maps))], 1, which.min)
+
+# Prepare maps
 sp::gridded(maps) <- ~ X + Y
 sp::proj4string(maps) <- sp::CRS("+init=epsg:32723")
 maps <- sp::spplot(maps, layout = c(3, 4), at = seq(0, 1, 0.1), col.regions = traffic.light(10))
