@@ -14,7 +14,7 @@ rm(list = ls())
 # Topodata
 
 # Source user defined functions
-source("code/user_functions.R")
+source("code/helper.R")
 
 # Buscar os objetos do R feitos e salvos nos processamentos anteriores
 
@@ -129,6 +129,7 @@ save(modelo0, modelo1, modelo2, modelo3, modelo4, modelo5, modelo6, modelo7, mod
      file = "data/R/models.rda")
 
 # Acurácia do ajuste
+# Aqui usamos a matriz de confusão para calcular a acurácia geral.
 accuracy <- lapply(
   list(modelo0, modelo1, modelo2, modelo3, modelo4, modelo5, modelo6, modelo7, modelo8, modelo9),
   function (x) sapply(x, fitAccuracy))
@@ -136,7 +137,9 @@ accuracy <- do.call(rbind, accuracy)
 colnames(accuracy) <- c("full", "reduz")
 rownames(accuracy) <- paste("modelo", 0:9, sep = "")
 
-# Validação cruzada
+# Validação cruzada 
+# Usar uma observação como observação de validação de cada vez.
+# Aqui usamos a matriz de erro para calcular a acurácia geral.
 validation <- lapply(
   list(modelo0, modelo1, modelo2, modelo3, modelo4, modelo5, modelo6, modelo7, modelo8, modelo9),
   function (x) sapply(x, crossValidation))
@@ -144,22 +147,23 @@ validation <- do.call(rbind, validation)
 colnames(validation) <- c("full", "reduz")
 
 # Resultado final
+# Agregar resultados da calibração e da validação.
+# Salvar os dados para construir tabela para o artigo.
 accuracy <- cbind(accuracy, validation)
 accuracy <- round(accuracy[, c(1, 3, 2, 4)], 1)
 accuracy
+write.csv(accuracy, file = "res/tab/accuracy.csv")
 
-# Save validation
-save(accuracy, file = "data/R/accuracy.rda")
+# Predição espacial ###########################################################################################
 
-# Spatial prediction ##########################################################################################
-
+# Carregar o pacote nnet para usar a função 'predict' para objetos 'multinom'.
 require(nnet)
 
-# Colour ramp for Shannon entropy
+# Rampa de cores para a entropia de Shannon
 traffic.light <- colorRampPalette(c("olivedrab", "khaki", "maroon1"))
 
 # MDE5a
-grid_MDE5a <- read.csv("data/mde05/grid.csv", sep = ";", dec = ",")     # MDE05             5a
+grid_MDE5a <- read.csv("data/mde05/grid.csv", sep = ";", dec = ",")
 grid_MDE5a$Flow.Direct <- as.factor(grid_MDE5a$Flow.Direct)
 pred_MDE5a <- data.frame(predict(modelo1[[2]], newdata = grid_MDE5a, type = "probs"))
 pred_MDE5a$class <- unlist(predict(modelo1[[2]], newdata = grid_MDE5a, type = "class"))
@@ -167,27 +171,28 @@ pred_MDE5a$entropy <- -rowSums(pred_MDE5a[, 1:6] * log(pred_MDE5a[, 1:6], base =
 pred_MDE5a <- cbind(grid_MDE5a[, c("X", "Y")], pred_MDE5a)
 sp::gridded(pred_MDE5a) <- ~ X + Y
 sp::proj4string(obj = pred_MDE5a) <- sp::CRS("+init=epsg:32723")
-sp::spplot(pred_MDE5a, "class")
-sp::spplot(pred_MDE5a, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+# sp::spplot(pred_MDE5a, "class")
+# sp::spplot(pred_MDE5a, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
 save(pred_MDE5a, file = "data/R/pred_MDE5a.rda")
 rm(pred_MDE5a)
 gc()
 
 # Testemunha
+# Usar o mesmo grid de predição carregado acima.
 pred_teste <- data.frame(predict(modelo0[[2]], newdata = grid_MDE5a, type = "probs"))
 pred_teste$class <- unlist(predict(modelo0[[2]], newdata = grid_MDE5a, type = "class"))
 pred_teste$entropy <- -rowSums(pred_teste[, 1:6] * log(pred_teste[, 1:6], base = 6), na.rm = TRUE)
 pred_teste <- cbind(grid_MDE5a[, c("X", "Y")], pred_teste)
 sp::gridded(pred_teste) <- ~ X + Y
 sp::proj4string(pred_teste) <- sp::CRS("+init=epsg:32723")
-sp::spplot(pred_teste, "class")
-sp::spplot(pred_teste, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+# sp::spplot(pred_teste, "class")
+# sp::spplot(pred_teste, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
 save(pred_teste, file = "data/R/pred_teste.rda")
 rm(pred_teste, grid_MDE5a)
 gc()
 
 # MDE5b
-grid_MDE5b <- read.csv("data/IBGE05/grid.csv", sep = ";", dec = ",")    # IBGE05            5b
+grid_MDE5b <- read.csv("data/IBGE05/grid.csv", sep = ";", dec = ",")
 grid_MDE5b$Flow.Direct <- as.factor(grid_MDE5b$Flow.Direct)
 pred_MDE5b <- data.frame(predict(modelo2[[2]], newdata = grid_MDE5b, type = "probs"))
 pred_MDE5b$class <- unlist(predict(modelo2[[2]], newdata = grid_MDE5b, type = "class"))
@@ -195,14 +200,14 @@ pred_MDE5b$entropy <- -rowSums(pred_MDE5b[, 1:6] * log(pred_MDE5b[, 1:6], base =
 pred_MDE5b <- cbind(grid_MDE5b[, c("X", "Y")], pred_MDE5b)
 sp::gridded(pred_MDE5b) <- ~ X + Y
 sp::proj4string(pred_MDE5b) <- sp::CRS("+init=epsg:32723")
-sp::spplot(pred_MDE5b, "class")
-sp::spplot(pred_MDE5b, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+# sp::spplot(pred_MDE5b, "class")
+# sp::spplot(pred_MDE5b, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
 save(pred_MDE5b, file = "data/R/pred_MDE5b.rda")
 rm(pred_MDE5b, grid_MDE5b)
 gc()
 
 # MDE5c
-grid_MDE5c <- read.csv("data/mde5/grid.csv", sep = ";", dec = ",")      # MDE Pontos (RJ05) 5c
+grid_MDE5c <- read.csv("data/mde5/grid.csv", sep = ";", dec = ",")
 grid_MDE5c$Flow.Direct <- as.factor(grid_MDE5c$Flow.Direct)
 pred_MDE5c <- data.frame(predict(modelo3[[2]], newdata = grid_MDE5c, type = "probs"))
 pred_MDE5c$class <- unlist(predict(modelo3[[2]], newdata = grid_MDE5c, type = "class"))
@@ -210,14 +215,14 @@ pred_MDE5c$entropy <- -rowSums(pred_MDE5c[, 1:6] * log(pred_MDE5c[, 1:6], base =
 pred_MDE5c <- cbind(grid_MDE5c[, c("X", "Y")], pred_MDE5c)
 sp::gridded(pred_MDE5c) <- ~ X + Y
 sp::proj4string(pred_MDE5c) <- sp::CRS("+init=epsg:32723")
-sp::spplot(pred_MDE5c, "class")
-sp::spplot(pred_MDE5c, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+# sp::spplot(pred_MDE5c, "class")
+# sp::spplot(pred_MDE5c, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
 save(pred_MDE5c, file = "data/R/pred_MDE5c.rda")
 rm(pred_MDE5c, grid_MDE5c)
 gc()
 
 # MDE20a
-grid_MDE20a <- read.csv("data/mde20/grid.csv", sep = ";", dec = ",")    # MDE20             20a
+grid_MDE20a <- read.csv("data/mde20/grid.csv", sep = ";", dec = ",")
 grid_MDE20a$Flow.Direct <- as.factor(grid_MDE20a$Flow.Direct)
 pred_MDE20a <- data.frame(predict(modelo4[[2]], newdata = grid_MDE20a, type = "probs"))
 pred_MDE20a$class <- unlist(predict(modelo4[[2]], newdata = grid_MDE20a, type = "class"))
@@ -225,14 +230,14 @@ pred_MDE20a$entropy <- -rowSums(pred_MDE20a[, 1:6] * log(pred_MDE20a[, 1:6], bas
 pred_MDE20a <- cbind(grid_MDE20a[, c("X", "Y")], pred_MDE20a)
 sp::gridded(pred_MDE20a) <- ~ X + Y
 sp::proj4string(pred_MDE20a) <- sp::CRS("+init=epsg:32723")
-sp::spplot(pred_MDE20a, "class")
-sp::spplot(pred_MDE20a, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+# sp::spplot(pred_MDE20a, "class")
+# sp::spplot(pred_MDE20a, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
 save(pred_MDE20a, file = "data/R/pred_MDE20a.rda")
 rm(pred_MDE20a, grid_MDE20a)
 gc()
 
 # MDE20b
-grid_MDE20b <- read.csv("data/IBGE20/grid.csv", sep = ";", dec = ",")   # IBGE20            20b
+grid_MDE20b <- read.csv("data/IBGE20/grid.csv", sep = ";", dec = ",")
 grid_MDE20b$Flow.Direct <- as.factor(grid_MDE20b$Flow.Direct)
 pred_MDE20b <- data.frame(predict(modelo5[[2]], newdata = grid_MDE20b, type = "probs"))
 pred_MDE20b$class <- unlist(predict(modelo5[[2]], newdata = grid_MDE20b, type = "class"))
@@ -240,14 +245,14 @@ pred_MDE20b$entropy <- -rowSums(pred_MDE20b[, 1:6] * log(pred_MDE20b[, 1:6], bas
 pred_MDE20b <- cbind(grid_MDE20b[, c("X", "Y")], pred_MDE20b)
 sp::gridded(pred_MDE20b) <- ~ X + Y
 sp::proj4string(pred_MDE20b) <- sp::CRS("+init=epsg:32723")
-sp::spplot(pred_MDE20b, "class")
-sp::spplot(pred_MDE20b, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+# sp::spplot(pred_MDE20b, "class")
+# sp::spplot(pred_MDE20b, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
 save(pred_MDE20b, file = "data/R/pred_MDE20b.rda")
 rm(pred_MDE20b, grid_MDE20b)
 gc()
 
 # MDE20c
-grid_MDE20c <- read.csv("data/RJ/grid.csv", sep = ";", dec = ",")       # MDE-RJ25          20c
+grid_MDE20c <- read.csv("data/RJ/grid.csv", sep = ";", dec = ",")
 grid_MDE20c$Flow.Direct <- as.factor(grid_MDE20c$Flow.Direct)
 pred_MDE20c <- data.frame(predict(modelo6[[2]], newdata = grid_MDE20c, type = "probs"))
 pred_MDE20c$class <- unlist(predict(modelo6[[2]], newdata = grid_MDE20c, type = "class"))
@@ -255,14 +260,14 @@ pred_MDE20c$entropy <- -rowSums(pred_MDE20c[, 1:6] * log(pred_MDE20c[, 1:6], bas
 pred_MDE20c <- cbind(grid_MDE20c[, c("X", "Y")], pred_MDE20c)
 sp::gridded(pred_MDE20c) <- ~ X + Y
 sp::proj4string(pred_MDE20c) <- sp::CRS("+init=epsg:32723")
-sp::spplot(pred_MDE20c, "class")
-sp::spplot(pred_MDE20c, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+# sp::spplot(pred_MDE20c, "class")
+# sp::spplot(pred_MDE20c, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
 save(pred_MDE20c, file = "data/R/pred_MDE20c.rda")
 rm(pred_MDE20c, grid_MDE20c)
 gc()
 
 # MDE30a
-grid_MDE30a <- read.csv("data/mde30/grid.csv", sep = ";", dec = ",")    # MDE30             30a
+grid_MDE30a <- read.csv("data/mde30/grid.csv", sep = ";", dec = ",")
 grid_MDE30a$Flow.Direct <- as.factor(grid_MDE30a$Flow.Direct)
 pred_MDE30a <- data.frame(predict(modelo7[[2]], newdata = grid_MDE30a, type = "probs"))
 pred_MDE30a$class <- unlist(predict(modelo7[[2]], newdata = grid_MDE30a, type = "class"))
@@ -270,14 +275,14 @@ pred_MDE30a$entropy <- -rowSums(pred_MDE30a[, 1:6] * log(pred_MDE30a[, 1:6], bas
 pred_MDE30a <- cbind(grid_MDE30a[, c("X", "Y")], pred_MDE30a)
 sp::gridded(pred_MDE30a) <- ~ X + Y
 sp::proj4string(pred_MDE30a) <- sp::CRS("+init=epsg:32723")
-sp::spplot(pred_MDE30a, "class")
-sp::spplot(pred_MDE30a, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+# sp::spplot(pred_MDE30a, "class")
+# sp::spplot(pred_MDE30a, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
 save(pred_MDE30a, file = "data/R/pred_MDE30a.rda")
 rm(pred_MDE30a, grid_MDE30a)
 gc()
 
 # MDE30b
-grid_MDE30b <- read.csv("data/IBGE30/grid.csv", sep = ";", dec = ",")   # IBGE30            30b
+grid_MDE30b <- read.csv("data/IBGE30/grid.csv", sep = ";", dec = ",")
 grid_MDE30b$Flow.Direct <- as.factor(grid_MDE30b$Flow.Direct)
 pred_MDE30b <- data.frame(predict(modelo8[[2]], newdata = grid_MDE30b, type = "probs"))
 pred_MDE30b$class <- unlist(predict(modelo8[[2]], newdata = grid_MDE30b, type = "class"))
@@ -285,14 +290,14 @@ pred_MDE30b$entropy <- -rowSums(pred_MDE30b[, 1:6] * log(pred_MDE30b[, 1:6], bas
 pred_MDE30b <- cbind(grid_MDE30b[, c("X", "Y")], pred_MDE30b)
 sp::gridded(pred_MDE30b) <- ~ X + Y
 sp::proj4string(pred_MDE30b) <- sp::CRS("+init=epsg:32723")
-sp::spplot(pred_MDE30b, "class")
-sp::spplot(pred_MDE30b, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+# sp::spplot(pred_MDE30b, "class")
+# sp::spplot(pred_MDE30b, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
 save(pred_MDE30b, file = "data/R/pred_MDE30b.rda")
 rm(pred_MDE30b, grid_MDE30b)
 gc()
 
 # MDE30c
-grid_MDE30c <- read.csv("data/Topodata/grid.csv", sep = ";", dec = ",") # Topodata          30c
+grid_MDE30c <- read.csv("data/Topodata/grid.csv", sep = ";", dec = ",")
 grid_MDE30c$Flow.Direct <- as.factor(grid_MDE30c$Flow.Direct)
 pred_MDE30c <- data.frame(predict(modelo9[[2]], newdata = grid_MDE30c, type = "probs"))
 pred_MDE30c$class <- unlist(predict(modelo9[[2]], newdata = grid_MDE30c, type = "class"))
@@ -300,15 +305,15 @@ pred_MDE30c$entropy <- -rowSums(pred_MDE30c[, 1:6] * log(pred_MDE30c[, 1:6], bas
 pred_MDE30c <- cbind(grid_MDE30c[, c("X", "Y")], pred_MDE30c)
 sp::gridded(pred_MDE30c) <- ~ X + Y
 sp::proj4string(pred_MDE30c) <- sp::CRS("+init=epsg:32723")
-sp::spplot(pred_MDE30c, "class")
-sp::spplot(pred_MDE30c, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
+# sp::spplot(pred_MDE30c, "class")
+# sp::spplot(pred_MDE30c, "entropy", at = seq(0, 1, 0.1), col.regions = traffic.light(10))
 save(pred_MDE30c, file = "data/R/pred_MDE30c.rda")
 rm(pred_MDE30c, grid_MDE30c)
 gc()
 
-# Prepare figures #############################################################################################
-# 
-# Prepare files names for figures
+# Preparar figuras ############################################################################################
+
+# Preparar os nomes dos arquivos das figuras
 files <- expand.grid(c(5, 20, 30), letters[1:3])
 files <- files[order(files$Var1), ]
 files <- 
@@ -319,85 +324,108 @@ for (i in 1:length(file_names)) {
   eval(file_names[[i]])
 }
 
-# Prepare figure with predictions
+# Preparar figuras com predições
 maps <- list()
 for (i in 1:length(files)) {
   obj <- parse(text = paste("maps[[i]] <- ", files[i], "$class", sep = ""))
   eval(obj)
 }
 
-# Number of pixels per class
+# Número de píxeis por classe
 tmp <- lapply(maps, summary)
 tmp <- lapply(1:10, function (i) tmp[[i]][1:6])
 tmp <- as.data.frame(tmp)
 colnames(tmp) <- 
-  c(paste(rep(paste("MDE", c(5, 20, 30), sep = ""), each = 3), c("a", "b", "c"), sep = ""), "T")
+  c(paste(rep(paste("DEM", c(5, 20, 30), sep = ""), each = 3), c("a", "b", "c"), sep = ""), "Baseline")
 nam <- rownames(tmp)
 tmp <- stack(tmp)
 tmp$um <- rep(nam, 10)
-tmp <- lattice::barchart(values ~ um | ind, tmp, layout = c(3, 4))
-tmp$index.cond[[1]] <- c(4:6, 1:3, 7:10)
+col <- sp::bpy.colors(length(unique(tmp$um)))
+p <- lattice::barchart(
+  values ~ um | ind, tmp, layout = c(3, 4), col = col, 
+  scales = list(y = list(alternating = FALSE), x = list(draw = FALSE)),
+  key = list(corner = c(0.9, 0.9), text = list(unique(tmp$um)), rectangles = list(col = col)),
+  panel = function (...) {
+    lattice::panel.grid(v = -1, h = -1)
+    lattice::panel.barchart(...)
+  })
+p$index.cond[[1]] <- c(5:7, 2:4, 8:10, 1)
 dev.off()
-png("res/fig/pixels.png", width = 40, height = 26, units = "cm", res = 150)
-tmp
+png("res/fig/pixels.png", width = 480 * 2.5, height = 480 * 3, res = 150)
+p
 dev.off()
+rm(p)
 
-# Continue with maps
+# Continuar com os mapas
 maps <- cbind(pred_MDE30a@coords, as.data.frame(maps))
 col_names <- gsub("pred_", "", files)
-col_names[length(col_names)] <- "T"
+col_names <- gsub("MDE", "DEM", col_names)
+col_names[length(col_names)] <- "Baseline"
 colnames(maps) <- c(colnames(maps)[1:2], col_names)
 sp::gridded(maps) <- ~ X + Y
 sp::proj4string(maps) <- sp::CRS("+init=epsg:32723")
-maps <- sp::spplot(maps, layout = c(3, 4))
-names(maps$legend) <- "inside"
-maps$legend$inside$x <- 0.795
-maps$legend$inside$y <- 0.875
-maps$legend$inside$args$key$height <- 0.2
-maps$index.cond[[1]] <- c(7:9, 4:6, 1:3, 10)
+p <- sp::spplot(
+  maps, layout = c(3, 4),
+  colorkey = FALSE,
+  key =
+    list(corner = c(0.9, 0.9), text = list(unique(tmp$um)), rectangles = list(col = col)),
+  panel = function (...) {
+    lattice::panel.grid(v = -1, h = -1)
+    lattice::panel.levelplot(...)
+  })
+p$index.cond[[1]] <- c(7:9, 4:6, 1:3, 10)
 dev.off()
-png("res/fig/predictions.png", width = 16, height = 26, units = "cm", res = 150)
-maps
+png("res/fig/predictions.png", width = 480*2, height = 480*3.5, res = 150)
+p
 dev.off()
+rm(p)
+gc()
 
-# Prepare figure with Shannon entropy
+# Preparas figuras com entropia de Shannon
 maps <- list()
 for (i in 1:length(files)) {
   obj <- parse(text = paste("maps[[i]] <- ", files[i], "$entropy", sep = ""))
   eval(obj)
 }
 
-# Distribution
+# Distribuição de frequência
 tmp <- data.frame(maps)
 colnames(tmp) <- 
-  c(paste(rep(paste("MDE", c(5, 20, 30), sep = ""), each = 3), c("a", "b", "c"), sep = ""), "T")
+  c(paste(rep(paste("DEM", c(5, 20, 30), sep = ""), each = 3), c("a", "b", "c"), sep = ""), "Baseline")
 tmp <- stack(tmp)
-tmp <- lattice::histogram(~ values | ind, tmp, layout = c(3, 4))
-tmp$index.cond[[1]] <- c(4:6, 1:3, 7:10)
+p <- lattice::histogram(
+  ~ values | ind, tmp, layout = c(3, 4), nint = 15, col = traffic.light(15), xlab = "Entropy")
+p$index.cond[[1]] <- c(5:7, 2:4, 8:10, 1)
 dev.off()
-png("res/fig/entropy_histogram.png", width = 20, height = 26, units = "cm", res = 150)
-tmp
+png("res/fig/entropy_histogram.png", width = 480 * 2.5, height = 480 * 3, res = 150)
+p
 dev.off()
+rm(p, tmp)
 
-# Continue with maps
+# Continuar com os mapas
 maps <- cbind(pred_MDE30a@coords, as.data.frame(maps))
 col_names <- gsub("pred_", "", files)
-col_names[length(col_names)] <- "T"
+col_names <- gsub("MDE", "DEM", col_names)
+col_names[length(col_names)] <- "Baseline"
 colnames(maps) <- c(colnames(maps)[1:2], col_names)
 
-# Get minimum entropy
-min_entropy <- apply(maps[, c(3, ncol(maps))], 1, which.min)
-
-# Prepare maps
+# Preparas mapas
 sp::gridded(maps) <- ~ X + Y
 sp::proj4string(maps) <- sp::CRS("+init=epsg:32723")
-maps <- sp::spplot(maps, layout = c(3, 4), at = seq(0, 1, 0.1), col.regions = traffic.light(10))
-names(maps$legend) <- "inside"
-maps$legend$inside$x <- 0.795
-maps$legend$inside$y <- 0.875
-maps$legend$inside$args$key$height <- 0.2
-maps$index.cond[[1]] <- c(7:9, 4:6, 1:3, 10)
+p <- sp::spplot(
+  maps, layout = c(3, 4),
+  col.regions = traffic.light,
+  panel = function (...) {
+    lattice::panel.grid(v = -1, h = -1)
+    lattice::panel.levelplot(...)
+  })
+p$index.cond[[1]] <- c(7:9, 4:6, 1:3, 10)
+names(p$legend) <- "inside"
+p$legend$inside$x <- 0.795
+p$legend$inside$y <- 0.875
+p$legend$inside$args$key$height <- 0.2
+# maps$index.cond[[1]] <- c(7:9, 4:6, 1:3, 10)
 dev.off()
-png("res/fig/entropy.png", width = 16, height = 26, units = "cm", res = 150)
-maps
+png("res/fig/entropy.png", width = 480*2, height = 480*3.5, res = 150)
+p
 dev.off()
