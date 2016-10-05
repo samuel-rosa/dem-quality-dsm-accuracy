@@ -163,7 +163,7 @@ require(nnet)
 traffic.light <- colorRampPalette(c("olivedrab", "khaki", "maroon1"))
 
 # MDE5a
-grid_MDE5a <- read.csv("data/mde05/grid.csv", sep = ";", dec = ",")
+grid_MDE5a <- read.csv("data/mde05/grid.csv.gz", sep = ";", dec = ",")
 grid_MDE5a$Flow.Direct <- as.factor(grid_MDE5a$Flow.Direct)
 pred_MDE5a <- data.frame(predict(modelo1[[2]], newdata = grid_MDE5a, type = "probs"))
 pred_MDE5a$class <- unlist(predict(modelo1[[2]], newdata = grid_MDE5a, type = "class"))
@@ -192,7 +192,7 @@ rm(pred_teste, grid_MDE5a)
 gc()
 
 # MDE5b
-grid_MDE5b <- read.csv("data/IBGE05/grid.csv", sep = ";", dec = ",")
+grid_MDE5b <- read.csv("data/IBGE05/grid.csv.gz", sep = ";", dec = ",")
 grid_MDE5b$Flow.Direct <- as.factor(grid_MDE5b$Flow.Direct)
 pred_MDE5b <- data.frame(predict(modelo2[[2]], newdata = grid_MDE5b, type = "probs"))
 pred_MDE5b$class <- unlist(predict(modelo2[[2]], newdata = grid_MDE5b, type = "class"))
@@ -207,7 +207,7 @@ rm(pred_MDE5b, grid_MDE5b)
 gc()
 
 # MDE5c
-grid_MDE5c <- read.csv("data/mde5/grid.csv", sep = ";", dec = ",")
+grid_MDE5c <- read.csv("data/mde5/grid.csv.gz", sep = ";", dec = ",")
 grid_MDE5c$Flow.Direct <- as.factor(grid_MDE5c$Flow.Direct)
 pred_MDE5c <- data.frame(predict(modelo3[[2]], newdata = grid_MDE5c, type = "probs"))
 pred_MDE5c$class <- unlist(predict(modelo3[[2]], newdata = grid_MDE5c, type = "class"))
@@ -222,7 +222,7 @@ rm(pred_MDE5c, grid_MDE5c)
 gc()
 
 # MDE20a
-grid_MDE20a <- read.csv("data/mde20/grid.csv", sep = ";", dec = ",")
+grid_MDE20a <- read.csv("data/mde20/grid.csv.gz", sep = ";", dec = ",")
 grid_MDE20a$Flow.Direct <- as.factor(grid_MDE20a$Flow.Direct)
 pred_MDE20a <- data.frame(predict(modelo4[[2]], newdata = grid_MDE20a, type = "probs"))
 pred_MDE20a$class <- unlist(predict(modelo4[[2]], newdata = grid_MDE20a, type = "class"))
@@ -237,7 +237,7 @@ rm(pred_MDE20a, grid_MDE20a)
 gc()
 
 # MDE20b
-grid_MDE20b <- read.csv("data/IBGE20/grid.csv", sep = ";", dec = ",")
+grid_MDE20b <- read.csv("data/IBGE20/grid.csv.gz", sep = ";", dec = ",")
 grid_MDE20b$Flow.Direct <- as.factor(grid_MDE20b$Flow.Direct)
 pred_MDE20b <- data.frame(predict(modelo5[[2]], newdata = grid_MDE20b, type = "probs"))
 pred_MDE20b$class <- unlist(predict(modelo5[[2]], newdata = grid_MDE20b, type = "class"))
@@ -252,7 +252,7 @@ rm(pred_MDE20b, grid_MDE20b)
 gc()
 
 # MDE20c
-grid_MDE20c <- read.csv("data/RJ/grid.csv", sep = ";", dec = ",")
+grid_MDE20c <- read.csv("data/RJ/grid.csv.gz", sep = ";", dec = ",")
 grid_MDE20c$Flow.Direct <- as.factor(grid_MDE20c$Flow.Direct)
 pred_MDE20c <- data.frame(predict(modelo6[[2]], newdata = grid_MDE20c, type = "probs"))
 pred_MDE20c$class <- unlist(predict(modelo6[[2]], newdata = grid_MDE20c, type = "class"))
@@ -267,7 +267,7 @@ rm(pred_MDE20c, grid_MDE20c)
 gc()
 
 # MDE30a
-grid_MDE30a <- read.csv("data/mde30/grid.csv", sep = ";", dec = ",")
+grid_MDE30a <- read.csv("data/mde30/grid.csv.gz", sep = ";", dec = ",")
 grid_MDE30a$Flow.Direct <- as.factor(grid_MDE30a$Flow.Direct)
 pred_MDE30a <- data.frame(predict(modelo7[[2]], newdata = grid_MDE30a, type = "probs"))
 pred_MDE30a$class <- unlist(predict(modelo7[[2]], newdata = grid_MDE30a, type = "class"))
@@ -282,7 +282,7 @@ rm(pred_MDE30a, grid_MDE30a)
 gc()
 
 # MDE30b
-grid_MDE30b <- read.csv("data/IBGE30/grid.csv", sep = ";", dec = ",")
+grid_MDE30b <- read.csv("data/IBGE30/grid.csv.gz", sep = ";", dec = ",")
 grid_MDE30b$Flow.Direct <- as.factor(grid_MDE30b$Flow.Direct)
 pred_MDE30b <- data.frame(predict(modelo8[[2]], newdata = grid_MDE30b, type = "probs"))
 pred_MDE30b$class <- unlist(predict(modelo8[[2]], newdata = grid_MDE30b, type = "class"))
@@ -297,7 +297,7 @@ rm(pred_MDE30b, grid_MDE30b)
 gc()
 
 # MDE30c
-grid_MDE30c <- read.csv("data/Topodata/grid.csv", sep = ";", dec = ",")
+grid_MDE30c <- read.csv("data/Topodata/grid.csv.gz", sep = ";", dec = ",")
 grid_MDE30c$Flow.Direct <- as.factor(grid_MDE30c$Flow.Direct)
 pred_MDE30c <- data.frame(predict(modelo9[[2]], newdata = grid_MDE30c, type = "probs"))
 pred_MDE30c$class <- unlist(predict(modelo9[[2]], newdata = grid_MDE30c, type = "class"))
