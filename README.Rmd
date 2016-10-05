@@ -1,0 +1,47 @@
+---
+title: "Choosing a digital elevation model for digital soil mapping"
+author: "Elias Mendes Costa e Alessandro Samuel-Rosa"
+date: "5 October 2016"
+output: html_document
+---
+
+## General description
+
+This repository contains the data and source code used to prepare the manuscript entitled ***Choosing a 
+digital elevation model for digital soil mapping***, which was submitted for publication in the 
+[Annals of the Brazilian Academy of Sciences][abc]. The study was developed by Elias Mendes Costa, Alessandro
+Samuel-Rosa and Lúcia Helena Cunha dos Anjos as part of the Master Thesis of Elias Mendes Costa presented 
+before the Post-Graduate Course in Agronomy-Soil Science of the Federal Rural University of Rio de Janeiro on 
+26 February 2015.
+
+[abc]: http://www.scielo.br/scielo.php?script=sci_serial&pid=0001-3765&lng=en&nrm=iso
+
+[Elias Mendes Costa](https://www.researchgate.net/profile/Elias_Costa6) was supported by the FAPERJ Foundation
+(Process E-26/100.422/2014) and later by the CNPq Foundation (141391/2015-4).
+[Alessandro Samuel-Rosa](https://www.researchgate.net/profile/Alessandro_Samuel-Rosa) was supported by the 
+CAPES Foundation (Process 88887.116157/2016-00).
+[Lúcia Helena Cunha dos Anjos](https://www.researchgate.net/profile/Lucia_Anjos) was supported by the CNPq
+Foundation (Process 480515/2013-1).
+
+## Study summary
+
+Digital elevation models (DEM) used in digital soil mapping (DSM) usually are selected based on a priori 
+quality criteria that reflect their capacity to represent the landscape surface. The objective of this study 
+was assess whether these criteria effectively select the DEM that produces the most accurate DSM. For that 
+end, a study case was carried out using nine DEM, their quality being evaluated using quali- and quantitative
+criteria. Logistic regression models were calibrated using terrain attributes derived from each DEM to assess
+their influence on DSM. Overall, the quality criteria were not efficient in discriminating a single best DEM.
+Besides, the quality of the studied DEM was not related to DSM accuracy, thus questioning the common
+recommendation of using the best DEM for DSM. Selecting predictor variables contributed more for increasing DSM
+accuracy than using finer spatial resolution and more accurate DEM. Identifying the truly best DEM for DSM
+requires the a posteriori assessment of DSM accuracy. When this assessment is unfeasible, the safest strategy
+might be to use a coarser spatial resolution DEM, e.g. TOPODATA.
+
+## Repository structure
+
+We use the following repository structure:
+
+    dem4dsm
+    - code  # R source code
+    - data  # point and gridded data
+    - res   # resulting images and tables
