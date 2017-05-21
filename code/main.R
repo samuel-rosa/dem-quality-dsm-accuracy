@@ -365,17 +365,17 @@ colnames(maps) <- c(colnames(maps)[1:2], col_names)
 sp::gridded(maps) <- ~ X + Y
 sp::proj4string(maps) <- sp::CRS("+init=epsg:32723")
 p <- sp::spplot(
-  maps, layout = c(3, 4),
-  colorkey = FALSE,
-  key =
-    list(corner = c(0.9, 0.9), text = list(unique(tmp$um)), rectangles = list(col = col)),
+  maps, layout = c(3, 4), colorkey = FALSE,
+  key = list(corner = c(0.9, 0.9), text = list(unique(tmp$um)), rectangles = list(col = col)),
   panel = function (...) {
-    lattice::panel.grid(v = -1, h = -1)
+    # lattice::panel.grid(v = -1, h = -1)
     lattice::panel.levelplot(...)
   })
 p$index.cond[[1]] <- c(7:9, 4:6, 1:3, 10)
+p$legend$inside$args$key$text[[1]] <- gsub(pattern = ".", "-", p$legend$inside$args$key$text[[1]], fixed = T)
+res <- 2.6
 dev.off()
-png("res/fig/predictions.png", width = 480*2, height = 480*3.5, res = 150)
+tiff("res/fig/predictions.tif", width = 480 * res, height = 480 * res * 1.75, res = 75 * res)
 p
 dev.off()
 rm(p)
@@ -416,7 +416,7 @@ p <- sp::spplot(
   maps, layout = c(3, 4),
   col.regions = traffic.light,
   panel = function (...) {
-    lattice::panel.grid(v = -1, h = -1)
+    # lattice::panel.grid(v = -1, h = -1)
     lattice::panel.levelplot(...)
   })
 p$index.cond[[1]] <- c(7:9, 4:6, 1:3, 10)
@@ -425,7 +425,8 @@ p$legend$inside$x <- 0.795
 p$legend$inside$y <- 0.875
 p$legend$inside$args$key$height <- 0.2
 # maps$index.cond[[1]] <- c(7:9, 4:6, 1:3, 10)
+res <- 2.6
 dev.off()
-png("res/fig/entropy.png", width = 480*2, height = 480*3.5, res = 150)
+tiff("res/fig/entropy.tif", width = 480 * res, height = 480 * res * 1.75, res = 75 * res)
 p
 dev.off()
