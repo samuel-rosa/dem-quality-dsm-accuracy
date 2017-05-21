@@ -1,7 +1,7 @@
 ---
 title: "Choosing a digital elevation model for digital soil mapping"
-author: "Elias Mendes Costa e Alessandro Samuel-Rosa"
-date: "5 October 2016"
+author: "Alessandro Samuel-Rosa and Elias Mendes Costa"
+date: "21 May 2017"
 output: html_document
 ---
 
@@ -9,12 +9,12 @@ output: html_document
 
 This repository contains the data and source code used to prepare the manuscript entitled ***Choosing a 
 digital elevation model for digital soil mapping***, which was submitted for publication in the 
-[Annals of the Brazilian Academy of Sciences][abc]. The study was developed by Elias Mendes Costa, Alessandro
+[Brazilian Journal of Soil Science][rbcs]. The study was developed by Elias Mendes Costa, Alessandro
 Samuel-Rosa and Lúcia Helena Cunha dos Anjos as part of the Master Thesis of Elias Mendes Costa presented 
 before the Post-Graduate Course in Agronomy-Soil Science of the Federal Rural University of Rio de Janeiro on 
 26 February 2015.
 
-[abc]: http://www.scielo.br/scielo.php?script=sci_serial&pid=0001-3765&lng=en&nrm=iso
+[rbcs]: http://www.scielo.br/scielo.php?script=sci_serial&pid=0100-0683&lng=en
 
 [Elias Mendes Costa](https://www.researchgate.net/profile/Elias_Costa6) was supported by the FAPERJ Foundation
 (Process E-26/100.422/2014) and later by the CNPq Foundation (141391/2015-4).
@@ -25,17 +25,7 @@ Foundation (Process 480515/2013-1).
 
 ## Study summary
 
-Digital elevation models (DEM) used in digital soil mapping (DSM) usually are selected based on a priori 
-quality criteria that reflect their capacity to represent the landscape surface. The objective of this study 
-was assess whether these criteria effectively select the DEM that produces the most accurate DSM. For that 
-end, a study case was carried out using nine DEM, their quality being evaluated using quali- and quantitative
-criteria. Logistic regression models were calibrated using terrain attributes derived from each DEM to assess
-their influence on DSM. Overall, the quality criteria were not efficient in discriminating a single best DEM.
-Besides, the quality of the studied DEM was not related to DSM accuracy, thus questioning the common
-recommendation of using the best DEM for DSM. Selecting predictor variables contributed more for increasing DSM
-accuracy than using finer spatial resolution and more accurate DEM. Identifying the truly best DEM for DSM
-requires the a posteriori assessment of DSM accuracy. When this assessment is unfeasible, the safest strategy
-might be to use a coarser spatial resolution DEM, e.g. TOPODATA.
+Digital elevation models (DEM) used in digital soil mapping are commonly selected based on *a priori* quality criteria that are thought to reflect their capacity to accurately represent the current landscape surface conditions. This is based on the untested hypothesis that the more accurate a DEM is, the more accurate the digital soil mapping prediction should be. The objective of this study was assess whether these criteria effectively identify the DEM that delivers the most accurate digital soil mapping predictions. For that end, a study case was carried out using 157 soil observations (sampling density of 0.1 point per hectare) and DEMs of 5 m, 20 m and 30 m spatial resolutions constructed using different data sources and processing routines. Several quali- and quantitative quality criteria found in the recent literature were used to evaluate the quality of these DEMs for digital soil mapping. To assess the true effect of each DEM on digital soil mapping predictions, multinomial logistic regression (MLR) models were calibrated using terrain attributes derived from each DEM. The results showed that the quality criteria can help identifying the DEMs that more accurately represent the landscape surface, although their aggregation and interpretations proved to be rather subjective and onerous. However, the most accurate digital soil mapping predictions were produced by using a DEMs considered as being of intermediate quality (5-m spatial resolution), with a validation accuracy of 47 %. A DEM identified as being of superior quality (5-m spatial resolution) had a prediction accuracy equal to that of a DEM judged as being poor (30-m spatial resolution) for digital soil mapping, i.e. 44 % of validation accuracy. Reducing the collinearity between predictor variables contributed more (four to six percentage points) for increasing the accuracy of digital soil mapping predictions than using finer spatial resolution and more accurate DEMs. Identifying the truly best DEM for digital soil mapping requires the *a posteriori* assessment of the accuracy of digital soil mapping predictions. When this assessment is unfeasible and soil sampling density is low, the safest strategy might be to use a coarser spatial resolution DEM.
 
 ## Repository structure
 
