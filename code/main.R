@@ -1,7 +1,5 @@
 ### Script para análise dos MDEs utilizando a de regressão logistica multinominal e classes de solo
 
-rm(list = ls())
-
 # MDEs avaliados:
 # IBGE05
 # MDE05
@@ -342,13 +340,18 @@ tmp <- stack(tmp)
 tmp$um <- rep(nam, 10)
 col <- sp::bpy.colors(length(unique(tmp$um)))
 p <- lattice::barchart(
-  values ~ um | ind, tmp, layout = c(3, 4), col = col, 
+  values ~ um | ind, tmp, layout = c(3, 4), col = col,
   scales = list(y = list(alternating = FALSE), x = list(draw = FALSE)),
   key = list(corner = c(0.9, 0.9), text = list(unique(tmp$um)), rectangles = list(col = col)),
   panel = function (...) {
     lattice::panel.grid(v = -1, h = -1)
     lattice::panel.barchart(...)
-  })
+  },
+  par.settings = list(
+    par.xlab.text = list(fontfamily = "serif"),
+    par.ylab.text = list(fontfamily = "serif"),
+    axis.text = list(fontfamily = "serif"),
+    grid.pars = list(fontfamily = 'serif')))
 p$index.cond[[1]] <- c(5:7, 2:4, 8:10, 1)
 dev.off()
 png("res/fig/pixels.png", width = 480 * 2.5, height = 480 * 3, res = 150)
@@ -370,7 +373,12 @@ p <- sp::spplot(
   panel = function (...) {
     # lattice::panel.grid(v = -1, h = -1)
     lattice::panel.levelplot(...)
-  })
+  },
+  par.settings = list(
+    par.xlab.text = list(fontfamily = "serif"),
+    par.ylab.text = list(fontfamily = "serif"),
+    axis.text = list(fontfamily = "serif"),
+    grid.pars = list(fontfamily = 'serif')))
 p$index.cond[[1]] <- c(7:9, 4:6, 1:3, 10)
 p$legend$inside$args$key$text[[1]] <- gsub(pattern = ".", "-", p$legend$inside$args$key$text[[1]], fixed = T)
 res <- 2.6
@@ -394,7 +402,12 @@ colnames(tmp) <-
   c(paste(rep(paste("DEM", c(5, 20, 30), sep = ""), each = 3), c("a", "b", "c"), sep = ""), "Baseline")
 tmp <- stack(tmp)
 p <- lattice::histogram(
-  ~ values | ind, tmp, layout = c(3, 4), nint = 15, col = traffic.light(15), xlab = "Entropy")
+  ~ values | ind, tmp, layout = c(3, 4), nint = 15, col = traffic.light(15), xlab = "Entropy",
+  par.settings = list(
+    par.xlab.text = list(fontfamily = "serif"),
+    par.ylab.text = list(fontfamily = "serif"),
+    axis.text = list(fontfamily = "serif"),
+    grid.pars = list(fontfamily = 'serif')))
 p$index.cond[[1]] <- c(5:7, 2:4, 8:10, 1)
 dev.off()
 png("res/fig/entropy_histogram.png", width = 480 * 2.5, height = 480 * 3, res = 150)
@@ -418,7 +431,12 @@ p <- sp::spplot(
   panel = function (...) {
     # lattice::panel.grid(v = -1, h = -1)
     lattice::panel.levelplot(...)
-  })
+  },
+  par.settings = list(
+    par.xlab.text = list(fontfamily = "serif"),
+    par.ylab.text = list(fontfamily = "serif"),
+    axis.text = list(fontfamily = "serif"),
+    grid.pars = list(fontfamily = 'serif')))
 p$index.cond[[1]] <- c(7:9, 4:6, 1:3, 10)
 names(p$legend) <- "inside"
 p$legend$inside$x <- 0.795
