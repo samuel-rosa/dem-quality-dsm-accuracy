@@ -2,7 +2,7 @@
 
 ## General description
 
-This repository contains the data and R source code used to prepare the paper [___Digital elevation model quality on digital soil mapping prediction accuracy__][paper], published in the journal [Ciência e Agrotecnologia][cagro]. The study was developed by Elias Mendes Costa, Alessandro Samuel-Rosa, and Lúcia Helena Cunha dos Anjos as part of the Master Thesis of Elias Mendes Costa presented before the Post-Graduate Course in Agronomy-Soil Science of the Federal Rural University of Rio de Janeiro on 26 February 2015.
+This repository contains the data and R source code used to prepare the paper [__Digital elevation model quality on digital soil mapping prediction accuracy__][paper], published in the journal [Ciência e Agrotecnologia][cagro]. The study was developed by Elias Mendes Costa, Alessandro Samuel-Rosa, and Lúcia Helena Cunha dos Anjos as part of the Master Thesis of Elias Mendes Costa presented before the Post-Graduate Course in Agronomy-Soil Science of the Federal Rural University of Rio de Janeiro on 26 February 2015.
 
 [paper]: http://dx.doi.org/10.1590/1413-70542018426027418
 [cagro]: http://www.scielo.br/scielo.php?script=sci_serial&pid=1413-7054&lng=en&nrm=iso
